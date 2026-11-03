@@ -1,0 +1,419 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1961EB742507451600C79BF8 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 1961EB732507451600C79BF8 /* Settings.bundle */; };
+		1968E72624086C2200784829 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1968E72524086C2200784829 /* AppDelegate.m */; };
+		1968E72924086C2200784829 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1968E72824086C2200784829 /* ViewController.m */; };
+		1968E72C24086C2200784829 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1968E72A24086C2200784829 /* Main.storyboard */; };
+		1968E72E24086C2B00784829 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1968E72D24086C2B00784829 /* Assets.xcassets */; };
+		1968E73424086C2B00784829 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 1968E73324086C2B00784829 /* main.m */; };
+		19F13E2A240A6F2200809B83 /* SocketDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 19F13E29240A6F2200809B83 /* SocketDelegate.m */; };
+		19F4071A240CFCFF00D7F506 /* MainApp.m in Sources */ = {isa = PBXBuildFile; fileRef = 19F40719240CFCFF00D7F506 /* MainApp.m */; };
+		19F4071C240F8FCA00D7F506 /* FunctionButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 19F4071B240F8FCA00D7F506 /* FunctionButton.m */; };
+		19F40723240FE2B800D7F506 /* zh.lproj in Resources */ = {isa = PBXBuildFile; fileRef = 19F40722240FE2B700D7F506 /* zh.lproj */; };
+		D023549DD3B09C46EBA2E321 /* libPods-Brokenithm-iOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5A7EE02147010843456A2152 /* libPods-Brokenithm-iOS.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		1277586B240D1432002C27EE /* MainApp.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MainApp.h; sourceTree = "<group>"; };
+		1961EB732507451600C79BF8 /* Settings.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = Settings.bundle; sourceTree = "<group>"; };
+		1968E72124086C2200784829 /* Brokenithm-iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Brokenithm-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		1968E72424086C2200784829 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		1968E72524086C2200784829 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		1968E72724086C2200784829 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		1968E72824086C2200784829 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		1968E72B24086C2200784829 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		1968E72D24086C2B00784829 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		1968E73224086C2B00784829 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		1968E73324086C2B00784829 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		19F13E22240A683200809B83 /* SocketDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SocketDelegate.h; sourceTree = "<group>"; };
+		19F13E29240A6F2200809B83 /* SocketDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SocketDelegate.m; sourceTree = "<group>"; };
+		19F40719240CFCFF00D7F506 /* MainApp.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MainApp.m; sourceTree = "<group>"; };
+		19F4071B240F8FCA00D7F506 /* FunctionButton.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FunctionButton.m; sourceTree = "<group>"; };
+		19F4071D240F8FD600D7F506 /* FunctionButton.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = FunctionButton.h; sourceTree = "<group>"; };
+		19F40722240FE2B700D7F506 /* zh.lproj */ = {isa = PBXFileReference; lastKnownFileType = folder; path = zh.lproj; sourceTree = "<group>"; };
+		19F40724240FE52F00D7F506 /* zh */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = zh; path = zh.lproj/Main.strings; sourceTree = "<group>"; };
+		259804D4CC006A58255BC938 /* Pods-Brokenithm-iOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Brokenithm-iOS.release.xcconfig"; path = "Pods/Target Support Files/Pods-Brokenithm-iOS/Pods-Brokenithm-iOS.release.xcconfig"; sourceTree = "<group>"; };
+		5A7EE02147010843456A2152 /* libPods-Brokenithm-iOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Brokenithm-iOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B78B36B35C6A90E4F71F84B4 /* Pods-Brokenithm-iOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Brokenithm-iOS.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Brokenithm-iOS/Pods-Brokenithm-iOS.debug.xcconfig"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1968E71E24086C2100784829 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D023549DD3B09C46EBA2E321 /* libPods-Brokenithm-iOS.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1968E71824086C2100784829 = {
+			isa = PBXGroup;
+			children = (
+				1968E72324086C2200784829 /* Brokenithm-iOS */,
+				1968E72224086C2200784829 /* Products */,
+				DE2E731564C136C0C73A56CF /* Pods */,
+				E73642D816ADA73C2E3B79FE /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		1968E72224086C2200784829 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1968E72124086C2200784829 /* Brokenithm-iOS.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		1968E72324086C2200784829 /* Brokenithm-iOS */ = {
+			isa = PBXGroup;
+			children = (
+				19F40722240FE2B700D7F506 /* zh.lproj */,
+				1968E72424086C2200784829 /* AppDelegate.h */,
+				1968E72524086C2200784829 /* AppDelegate.m */,
+				19F4071D240F8FD600D7F506 /* FunctionButton.h */,
+				19F4071B240F8FCA00D7F506 /* FunctionButton.m */,
+				1277586B240D1432002C27EE /* MainApp.h */,
+				19F40719240CFCFF00D7F506 /* MainApp.m */,
+				1968E72724086C2200784829 /* ViewController.h */,
+				1968E72824086C2200784829 /* ViewController.m */,
+				1961EB732507451600C79BF8 /* Settings.bundle */,
+				1968E72A24086C2200784829 /* Main.storyboard */,
+				1968E72D24086C2B00784829 /* Assets.xcassets */,
+				1968E73224086C2B00784829 /* Info.plist */,
+				1968E73324086C2B00784829 /* main.m */,
+				19F13E22240A683200809B83 /* SocketDelegate.h */,
+				19F13E29240A6F2200809B83 /* SocketDelegate.m */,
+			);
+			path = "Brokenithm-iOS";
+			sourceTree = "<group>";
+		};
+		DE2E731564C136C0C73A56CF /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				B78B36B35C6A90E4F71F84B4 /* Pods-Brokenithm-iOS.debug.xcconfig */,
+				259804D4CC006A58255BC938 /* Pods-Brokenithm-iOS.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
+		E73642D816ADA73C2E3B79FE /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				5A7EE02147010843456A2152 /* libPods-Brokenithm-iOS.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1968E72024086C2100784829 /* Brokenithm-iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1968E73724086C2B00784829 /* Build configuration list for PBXNativeTarget "Brokenithm-iOS" */;
+			buildPhases = (
+				0542A5954C6F2FAC73EE7B2F /* [CP] Check Pods Manifest.lock */,
+				1968E71D24086C2100784829 /* Sources */,
+				1968E71E24086C2100784829 /* Frameworks */,
+				1968E71F24086C2100784829 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Brokenithm-iOS";
+			productName = "Brokenithm-iOS";
+			productReference = 1968E72124086C2200784829 /* Brokenithm-iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		1968E71924086C2100784829 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1010;
+				ORGANIZATIONNAME = chuni32;
+				TargetAttributes = {
+					1968E72024086C2100784829 = {
+						CreatedOnToolsVersion = 10.1;
+					};
+				};
+			};
+			buildConfigurationList = 1968E71C24086C2100784829 /* Build configuration list for PBXProject "Brokenithm-iOS" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+				zh,
+			);
+			mainGroup = 1968E71824086C2100784829;
+			productRefGroup = 1968E72224086C2200784829 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				1968E72024086C2100784829 /* Brokenithm-iOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		1968E71F24086C2100784829 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1961EB742507451600C79BF8 /* Settings.bundle in Resources */,
+				1968E72E24086C2B00784829 /* Assets.xcassets in Resources */,
+				19F40723240FE2B800D7F506 /* zh.lproj in Resources */,
+				1968E72C24086C2200784829 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		0542A5954C6F2FAC73EE7B2F /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-Brokenithm-iOS-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1968E71D24086C2100784829 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1968E72924086C2200784829 /* ViewController.m in Sources */,
+				19F4071C240F8FCA00D7F506 /* FunctionButton.m in Sources */,
+				1968E73424086C2B00784829 /* main.m in Sources */,
+				1968E72624086C2200784829 /* AppDelegate.m in Sources */,
+				19F4071A240CFCFF00D7F506 /* MainApp.m in Sources */,
+				19F13E2A240A6F2200809B83 /* SocketDelegate.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		1968E72A24086C2200784829 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				1968E72B24086C2200784829 /* Base */,
+				19F40724240FE52F00D7F506 /* zh */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		1968E73524086C2B00784829 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		1968E73624086C2B00784829 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		1968E73824086C2B00784829 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = B78B36B35C6A90E4F71F84B4 /* Pods-Brokenithm-iOS.debug.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 11;
+				INFOPLIST_FILE = "Brokenithm-iOS/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chuni32.pad;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				TARGETED_DEVICE_FAMILY = "2";
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		1968E73924086C2B00784829 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 259804D4CC006A58255BC938 /* Pods-Brokenithm-iOS.release.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 11;
+				INFOPLIST_FILE = "Brokenithm-iOS/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.chuni32.pad;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				TARGETED_DEVICE_FAMILY = "2";
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1968E71C24086C2100784829 /* Build configuration list for PBXProject "Brokenithm-iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1968E73524086C2B00784829 /* Debug */,
+				1968E73624086C2B00784829 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1968E73724086C2B00784829 /* Build configuration list for PBXNativeTarget "Brokenithm-iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1968E73824086C2B00784829 /* Debug */,
+				1968E73924086C2B00784829 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 1968E71924086C2100784829 /* Project object */;
+}

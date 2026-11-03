@@ -1,0 +1,65 @@
+name: Build unsigned IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master, main]
+
+jobs:
+  build:
+    # macOS runner is only used to compile. Nothing is signed and no Apple ID,
+    # certificate or provisioning profile is involved.
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode 16 when available
+        run: |
+          echo "Installed Xcode:"
+          ls -d /Applications/Xcode*.app || true
+          XC=$(ls -d /Applications/Xcode_16*.app 2>/dev/null | sort -V | tail -1)
+          if [ -n "$XC" ]; then
+            sudo xcode-select -s "$XC"
+          fi
+          xcodebuild -version
+
+      - name: Build for device (unsigned)
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -workspace Brokenithm-iOS.xcworkspace \
+            -scheme Brokenithm-iOS \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build | tee xcodebuild.log
+
+      - name: Package unsigned IPA
+        run: |
+          APP="build/Build/Products/Release-iphoneos/Brokenithm-iOS.app"
+          test -d "$APP"
+          lipo -info "$APP/Brokenithm-iOS"
+          /usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP/Info.plist"
+          rm -rf Payload
+          mkdir Payload
+          cp -R "$APP" Payload/
+          zip -qry Brokenithm-32zone-unsigned.ipa Payload
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-log
+          path: xcodebuild.log
+          if-no-files-found: ignore
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: Brokenithm-32zone-unsigned
+          path: Brokenithm-32zone-unsigned.ipa
+          if-no-files-found: error
