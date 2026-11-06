@@ -1,14 +1,9 @@
-> This copy has been modified to output all 32 touch zones (16 columns × upper/lower sensor rows). Build/install instructions (Chinese, free tooling): see [BUILD.md](BUILD.md).
+## BeLikeithm_iOS  
 
-## Brokenithm-iOS  
+> Brokenithm的一个版本，制作了关于32区（上下各16）的触摸支持。
 
-A version of Brokenithm, based on Brokenithm-Evolved, based on Brokenithm.   
-Using usbmux to communicate over USB, rather than wifi to prevent sudden lag.   
-
-### Branches
-`master` branch is iOS App branch, the controller itself.   
-`win-client-cpp_(failed)` branch is initial client branch written in C++, and abandoned due to library too old.   
-`win-client` branch is current client branch written in C#.   
+### 内容
+`master` 内是ios控制端本体，电脑控制端可直接使用borkenithm的exe
 
 ### Build env
 - Xcode 11.3.1  
