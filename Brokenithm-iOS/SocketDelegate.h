@@ -18,6 +18,7 @@
 @interface SocketDelegate : NSObject {
     GCDAsyncSocket *server;
     NSMutableArray<GCDAsyncSocket*> *connectedSockets;
+    BOOL acceptRetryScheduled;
 }
 @property ViewController *parentVc;
 

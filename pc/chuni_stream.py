@@ -452,6 +452,7 @@ class Sender:
         self.running = True
         self.frames = 0
         self.bytes = 0
+        self.last_send = 0.0
         self.last_report = time.time()
 
     def _connect(self):
@@ -476,6 +477,7 @@ class Sender:
             self.sock = sock
             self.frames = 0
             self.bytes = 0
+            self.last_send = time.monotonic()
             self.last_report = time.time()
             self.log(f"已连接 {self.host}:{self.port}，开始推送画面")
             threading.Thread(target=self._drain, args=(sock,), daemon=True).start()
@@ -486,8 +488,12 @@ class Sender:
         # App 会把触摸包广播给所有连接，这里读掉丢弃，避免接收缓冲区堆满。
         try:
             while self.running:
-                if not sock.recv(4096):
-                    break
+                try:
+                    if not sock.recv(4096):
+                        break
+                except socket.timeout:
+                    # 没有触摸包时读超时是正常的，不能当成断开重连。
+                    continue
         except OSError:
             pass
         try:
@@ -518,6 +524,22 @@ class Sender:
                     continue
                 self.frames += 1
                 self.bytes += len(data)
+                self.last_send = time.monotonic()
+            elif self.sock is not None and time.monotonic() - self.last_send >= 2.0:
+                # App 读包的超时是 5 秒，没有画面时也要发心跳，否则它会把
+                # 连接断掉并显示“未连接”。
+                try:
+                    self.sock.sendall(b"\x04NOP\x00")
+                    self.last_send = time.monotonic()
+                except OSError:
+                    self.log("连接断开，重连中")
+                    try:
+                        self.sock.close()
+                    except OSError:
+                        pass
+                    self.sock = None
+                    time.sleep(1)
+                    continue
             if time.time() - self.last_report >= 5:
                 spent = time.time() - self.last_report
                 size = self.capture.size or (0, 0)

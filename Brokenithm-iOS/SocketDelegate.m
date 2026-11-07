@@ -22,10 +22,21 @@
     return [super init];
 }
 - (void)acceptConnection {
+    // This fork and the original Brokenithm both listen on 24864, and only one
+    // process can bind it. Stay on a retry loop so the server recovers by
+    // itself once the other app is gone, instead of staying disconnected.
+    if (![server isDisconnected]) return;
     NSError *error = nil;
-    if (![server acceptOnPort:24864 error:&error]) {
-        NSLog(@"error creating server: %@", error);
+    if ([server acceptOnPort:24864 error:&error]) {
+        acceptRetryScheduled = NO;
+        return;
     }
+    if (!acceptRetryScheduled) {
+        NSLog(@"error creating server: %@", error);
+        acceptRetryScheduled = YES;
+    }
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(acceptConnection) object:nil];
+    [self performSelector:@selector(acceptConnection) withObject:nil afterDelay:1.0];
 }
 
 - (void)socket:(GCDAsyncSocket *)sock didAcceptNewSocket:(GCDAsyncSocket *)newSocket {
