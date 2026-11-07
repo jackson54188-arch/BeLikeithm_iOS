@@ -15,12 +15,14 @@
 - (float)sliderBandTop;
 - (float)sliderBandBottom;
 - (float)videoHeight;
+- (CGRect)videoRect;
+- (CGRect)panelRect;
 - (CGRect)airRect;
 - (void)applyLayout;
 - (void)updateRowDivider;
 @end
 
-#define FUNCTION_MENU_HEIGHT 360.0f
+#define FUNCTION_MENU_HEIGHT 420.0f
 
 @implementation ViewController
 
@@ -145,6 +147,23 @@
             [enableAir addSubview:enableAirToggle];
             offset += 60;
             
+            UIView *mirrorScreen;
+            UILabel *mirrorScreenLabel;
+            mirrorScreen = [[UIView alloc] initWithFrame:CGRectMake(0, offset, 200, 60)];
+            mirrorScreen.backgroundColor = [UIColor blackColor];
+            mirrorScreen.layer.borderColor = [UIColor whiteColor].CGColor;
+            mirrorScreen.layer.borderWidth = 1.0;
+            [functionBtnView addSubview:mirrorScreen];
+            mirrorScreenLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 130, 60)];
+            mirrorScreenLabel.textAlignment = NSTextAlignmentRight;
+            mirrorScreenLabel.textColor = [UIColor whiteColor];
+            mirrorScreenLabel.numberOfLines = 1;
+            mirrorScreenLabel.text = [[NSBundle mainBundle] localizedStringForKey:@"Mirror screen" value:@"" table:nil];
+            [mirrorScreen addSubview:mirrorScreenLabel];
+            mirrorScreenToggle = [[UISwitch alloc] initWithFrame:CGRectMake(135, 13, 50, 27)];
+            [mirrorScreen addSubview:mirrorScreenToggle];
+            offset += 60;
+
             FunctionButton *moreBtn = [[FunctionButton alloc] initAtY:offset];
             offset += 60;
             moreBtn.name = @"more_setting_button";
@@ -156,6 +175,7 @@
             
             [self loadPrefs];
             [enableAirToggle addTarget:self action:@selector(enableAirChanged) forControlEvents:UIControlEventValueChanged];
+            [mirrorScreenToggle addTarget:self action:@selector(mirrorScreenChanged) forControlEvents:UIControlEventValueChanged];
         }
     }
     
@@ -262,12 +282,11 @@
     pref = [NSUserDefaults.standardUserDefaults boolForKey:@"invertAir"];
     [self updateAirInverted:pref];
 
-    // video: 16:9 game picture above, touch panel flush underneath
+    // mirror: game picture on top, touch panel laid out to match
     BOOL videoPref = [NSUserDefaults.standardUserDefaults boolForKey:@"videoLayout"];
-    if (videoPref != videoLayout) {
-        videoLayout = videoPref;
-        [self applyLayout];
-    }
+    videoLayout = videoPref;
+    [mirrorScreenToggle setOn:videoLayout animated:NO];
+    [self applyLayout];
 
     // touch rows: 0 = 16 zones, 1 = independent 32, 2 = upper row also sends primary
     rowMode = (int)[NSUserDefaults.standardUserDefaults integerForKey:@"rowMode"];
@@ -303,6 +322,12 @@
     UIImage *image = [UIImage imageWithData:jpegData];
     if (image) videoView.image = image;
 }
+-(void)mirrorScreenChanged {
+    BOOL pref = mirrorScreenToggle.on;
+    [NSUserDefaults.standardUserDefaults setBool:pref forKey:@"videoLayout"];
+    videoLayout = pref;
+    [self applyLayout];
+}
 -(void)enableAirChanged{
     BOOL pref = enableAirToggle.on;
     [NSUserDefaults.standardUserDefaults setBool:pref forKey:@"enableAir"];
@@ -324,28 +349,57 @@
 }
 
 -(float)videoHeight {
-    // The game picture keeps its 16:9 shape; on a landscape iPad that leaves a
-    // shallow strip at the bottom, which is where the cabinet panel sits.
+    // The game picture keeps its 16:9 shape.
     float height = screenWidth * 9.0f / 16.0f;
     return height < screenHeight ? height : screenHeight;
+}
+
+-(CGRect)videoRect {
+    if (!videoLayout) return CGRectZero;
+    float video = [self videoHeight];
+    // Portrait stacks a 21:9 panel under the picture; center the pair.
+    float panel = 0;
+    if (screenHeight > screenWidth) {
+        panel = screenWidth * 9.0f / 21.0f;
+        if (video + panel > screenHeight) panel = screenHeight - video;
+    }
+    float top = (screenHeight - video - panel) / 2.0f;
+    if (top < 0) top = 0;
+    return CGRectMake(0, top, screenWidth, video);
+}
+
+-(CGRect)panelRect {
+    if (videoLayout) {
+        CGRect video = [self videoRect];
+        // Landscape: the panel lies exactly on the 16:9 picture.
+        if (screenWidth > screenHeight) return video;
+        float height = screenWidth * 9.0f / 21.0f;
+        float room = screenHeight - CGRectGetMaxY(video);
+        if (height > room) height = room;
+        if (height < 1) height = 1;
+        return CGRectMake(0, CGRectGetMaxY(video), screenWidth, height);
+    }
+    float top = [self sliderBandTop];
+    return CGRectMake(0, top, screenWidth, [self sliderBandBottom] - top);
 }
 
 -(CGRect)airRect {
     float airHeight = screenHeight * 0.4f;
     if (videoLayout) {
-        float video = [self videoHeight];
-        if (airHeight > video) airHeight = video;
-        return CGRectMake(0, invertAir ? video - airHeight : 0, screenWidth, airHeight);
+        CGRect video = [self videoRect];
+        if (airHeight > video.size.height) airHeight = video.size.height;
+        return CGRectMake(0, video.origin.y + (invertAir ? video.size.height - airHeight : 0),
+                          screenWidth, airHeight);
     }
     return CGRectMake(0, invertAir ? screenHeight - airHeight : 0, screenWidth, airHeight);
 }
 
 -(void)applyLayout {
-    float video = videoLayout ? [self videoHeight] : 0;
-    videoView.frame = CGRectMake(0, 0, screenWidth, video);
+    CGRect video = [self videoRect];
+    videoView.frame = video;
     videoView.hidden = !videoLayout;
 
-    // In streaming layout the air zones sit on the picture itself; a clear
+    // In mirror layout the air zones sit on the picture itself; a clear
     // background keeps the game visible behind the grid.
     CGRect air = [self airRect];
     self.airIOView.frame = air;
@@ -360,26 +414,26 @@
         band.frame = CGRectMake(0, i * bandHeight, screenWidth, bandHeight);
     }
 
-    float top = [self sliderBandTop], bottom = [self sliderBandBottom];
-    float panelHeight = bottom - top;
-    self.sliderIOView.frame = CGRectMake(0, top, screenWidth, panelHeight);
+    CGRect panel = [self panelRect];
+    self.sliderIOView.frame = panel;
     float columnWidth = screenWidth / 16.0f;
     for (NSUInteger i = 0; i < sliderColumns.count; i++) {
         UIView *column = sliderColumns[i];
-        column.frame = CGRectMake(i * columnWidth, 0, columnWidth, panelHeight);
+        column.frame = CGRectMake(i * columnWidth, 0, columnWidth, panel.size.height);
     }
-    ledBackground.frame = CGRectMake(0, 0, screenWidth, panelHeight);
+    ledBackground.frame = CGRectMake(0, 0, screenWidth, panel.size.height);
+    // In landscape the panel lies on the picture, so the LED colours would
+    // hide the game; keep them only on the separate portrait panel.
+    ledBackground.opacity = (videoLayout && screenWidth > screenHeight) ? 0.0f : 1.0f;
     [self updateRowDivider];
 }
 
-// The playable band excludes the air strip when air input is enabled.
+// Normal (non-mirror) layout: the playable band excludes the air strip.
 -(float)sliderBandTop {
-    if (videoLayout) return [self videoHeight];
     if (!airEnabled) return 0;
     return invertAir ? 0 : screenHeight * 0.4;
 }
 -(float)sliderBandBottom {
-    if (videoLayout) return screenHeight;
     if (!airEnabled) return screenHeight;
     return invertAir ? screenHeight * 0.6 : screenHeight;
 }
@@ -456,8 +510,9 @@
     CGRect air = [self airRect];
     float airIOHeight = air.size.height / 6;
     float sliderIOWidth = screenWidth / 16;
-    float panelTop = [self sliderBandTop];
-    float panelBottom = [self sliderBandBottom];
+    CGRect panel = [self panelRect];
+    float panelTop = panel.origin.y;
+    float panelBottom = CGRectGetMaxY(panel);
     struct ioBuf buf = {0};
     for (UITouch *touch in event.allTouches) {
         UITouchPhase phase = touch.phase;

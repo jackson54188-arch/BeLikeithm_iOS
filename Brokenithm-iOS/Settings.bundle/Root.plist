@@ -40,7 +40,7 @@
 			<key>Type</key>
 			<string>PSToggleSwitchSpecifier</string>
 			<key>Title</key>
-			<string>Screen streaming layout</string>
+			<string>Mirror screen</string>
 			<key>Key</key>
 			<string>videoLayout</string>
 			<key>DefaultValue</key>

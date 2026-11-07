@@ -28,6 +28,7 @@
     UIView *functionBtnView;
     UILabel *openCloseBtn;
     UISwitch *enableAirToggle;
+    UISwitch *mirrorScreenToggle;
     BOOL airEnabled;
     BOOL autoPopMenu;
     BOOL invertAir;
