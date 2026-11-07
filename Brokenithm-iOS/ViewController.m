@@ -229,6 +229,26 @@
     NSLog(@"server created");
 }
 
+-(void)viewDidLayoutSubviews {
+    [super viewDidLayoutSubviews];
+    CGSize size = self.view.bounds.size;
+    if (size.width < 1 || size.height < 1) return;
+    if (!connectStatusView || !functionBtnView) return;
+    if (fabs(size.width - screenWidth) < 0.5 && fabs(size.height - screenHeight) < 0.5) return;
+
+    // Portrait gives the panel far more height: the 16:9 picture stays at the
+    // top and everything below it becomes touch surface.
+    BOOL statusVisible = connectStatusView.frame.origin.x < screenWidth - 1;
+    screenWidth = size.width;
+    screenHeight = size.height;
+
+    connectStatusView.frame = CGRectMake(statusVisible ? screenWidth - 200.0 : screenWidth,
+                                         screenHeight * 0.1, 200.0, 50.0);
+    functionBtnView.frame = CGRectMake(funcViewOn ? 0 : -200, screenHeight * 0.1,
+                                       250, FUNCTION_MENU_HEIGHT);
+    [self applyLayout];
+}
+
 -(void)loadPrefs {
     // enable air
     BOOL pref = [NSUserDefaults.standardUserDefaults boolForKey:@"enableAir"];
