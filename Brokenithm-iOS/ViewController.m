@@ -14,6 +14,9 @@
 }
 - (float)sliderBandTop;
 - (float)sliderBandBottom;
+- (float)videoHeight;
+- (CGRect)airRect;
+- (void)applyLayout;
 - (void)updateRowDivider;
 @end
 
@@ -28,6 +31,7 @@
         @"enableAir": @YES,
         @"autoPopMenu": @YES,
         @"invertAir": @NO,
+        @"videoLayout": @YES,
         @"rowMode": @1,
         @"swapRows": @NO,
         @"menuDuration": @1.0
@@ -51,6 +55,17 @@
     screenWidth = screenSize.size.width;
     screenHeight = screenSize.size.height;
     float sliderHeight = screenHeight;
+    videoLayout = [NSUserDefaults.standardUserDefaults boolForKey:@"videoLayout"];
+
+    // The mirrored game picture sits above the touch panel; it stays black
+    // until the PC sends the first frame. The touch field always stays below it.
+    videoView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, screenWidth, [self videoHeight])];
+    videoView.backgroundColor = [UIColor blackColor];
+    videoView.contentMode = UIViewContentModeScaleAspectFit;
+    videoView.clipsToBounds = YES;
+    videoView.userInteractionEnabled = NO;
+    [self.view addSubview:videoView];
+
     self.airIOView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, screenWidth, screenHeight*0.4)];
     self.sliderIOView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, screenWidth, sliderHeight)];
     self.airIOView.backgroundColor = [UIColor blackColor];
@@ -168,22 +183,22 @@
     }
     
     struct CGColor *gridBorderColor = [UIColor colorWithWhite:1.0 alpha:0.2].CGColor;
-    float airOffset=0, airHeight = screenHeight*0.4/6;
+    airBands = [NSMutableArray arrayWithCapacity:6];
     for (int i=0;i<6;i++) {
-        UIView *airInput = [[UIView alloc] initWithFrame:CGRectMake(0, airOffset, screenWidth, airHeight)];
+        UIView *airInput = [[UIView alloc] initWithFrame:CGRectZero];
         airInput.layer.borderWidth = 1.0f;
         airInput.layer.borderColor = gridBorderColor;
-        airOffset += airHeight;
         [self.airIOView addSubview:airInput];
+        [airBands addObject:airInput];
     }
     
-    float sliderWidth = screenWidth / 16, sliderOffset = 0;
+    sliderColumns = [NSMutableArray arrayWithCapacity:16];
     for (int i=0;i<16;i++) {
-        UIView *sliderInput = [[UIView alloc] initWithFrame:CGRectMake(sliderOffset, 0, sliderWidth, sliderHeight)];
+        UIView *sliderInput = [[UIView alloc] initWithFrame:CGRectZero];
         sliderInput.layer.borderWidth = 1.0f;
         sliderInput.layer.borderColor = gridBorderColor;
-        sliderOffset += sliderWidth;
         [self.sliderIOView addSubview:sliderInput];
+        [sliderColumns addObject:sliderInput];
     }
 
     rowDividerView = [[UIView alloc] initWithFrame:CGRectMake(0, screenHeight / 2 - 0.5, screenWidth, 1)];
@@ -207,7 +222,7 @@
     rowBottomLabel.userInteractionEnabled = NO;
     [self.sliderIOView addSubview:rowBottomLabel];
 
-    [self updateRowDivider];
+    [self applyLayout];
 
     server = [[SocketDelegate alloc] init];
     server.parentVc = self;
@@ -226,6 +241,13 @@
     // invert air
     pref = [NSUserDefaults.standardUserDefaults boolForKey:@"invertAir"];
     [self updateAirInverted:pref];
+
+    // video: 16:9 game picture above, touch panel flush underneath
+    BOOL videoPref = [NSUserDefaults.standardUserDefaults boolForKey:@"videoLayout"];
+    if (videoPref != videoLayout) {
+        videoLayout = videoPref;
+        [self applyLayout];
+    }
 
     // touch rows: 0 = 16 zones, 1 = independent 32, 2 = upper row also sends primary
     rowMode = (int)[NSUserDefaults.standardUserDefaults integerForKey:@"rowMode"];
@@ -256,6 +278,11 @@
     ledBackground.colors = colorArr;
     [ledBackground setNeedsDisplay];
 }
+-(void)updateVideo:(NSData*)jpegData {
+    if (!videoLayout || jpegData.length == 0) return;
+    UIImage *image = [UIImage imageWithData:jpegData];
+    if (image) videoView.image = image;
+}
 -(void)enableAirChanged{
     BOOL pref = enableAirToggle.on;
     [NSUserDefaults.standardUserDefaults setBool:pref forKey:@"enableAir"];
@@ -268,26 +295,71 @@
 -(void)updateAirEnabled:(BOOL)enable {
     self.airIOView.hidden = !enable;
     airEnabled = enable;
-    [self updateRowDivider];
+    [self applyLayout];
 }
 
 -(void)updateAirInverted:(BOOL)invert {
-    if (invertAir != invert) {
-        CGRect screenSize = [UIScreen mainScreen].bounds;
-        screenWidth = screenSize.size.width;
-        screenHeight = screenSize.size.height;
-        self.airIOView.frame = CGRectMake(0, invert ? screenHeight * 0.6 : 0, screenWidth, screenHeight * 0.4);
-        invertAir = invert;
+    invertAir = invert;
+    [self applyLayout];
+}
+
+-(float)videoHeight {
+    // The game picture keeps its 16:9 shape; on a landscape iPad that leaves a
+    // shallow strip at the bottom, which is where the cabinet panel sits.
+    float height = screenWidth * 9.0f / 16.0f;
+    return height < screenHeight ? height : screenHeight;
+}
+
+-(CGRect)airRect {
+    float airHeight = screenHeight * 0.4f;
+    if (videoLayout) {
+        float video = [self videoHeight];
+        if (airHeight > video) airHeight = video;
+        return CGRectMake(0, invertAir ? video - airHeight : 0, screenWidth, airHeight);
     }
+    return CGRectMake(0, invertAir ? screenHeight - airHeight : 0, screenWidth, airHeight);
+}
+
+-(void)applyLayout {
+    float video = videoLayout ? [self videoHeight] : 0;
+    videoView.frame = CGRectMake(0, 0, screenWidth, video);
+    videoView.hidden = !videoLayout;
+
+    // In streaming layout the air zones sit on the picture itself; a clear
+    // background keeps the game visible behind the grid.
+    CGRect air = [self airRect];
+    self.airIOView.frame = air;
+    self.airIOView.backgroundColor = videoLayout ? [UIColor clearColor] : [UIColor blackColor];
+    self.airIOView.layer.borderWidth = videoLayout ? 0.0f : 1.0f;
+    self.airIOView.layer.borderColor = (videoLayout
+        ? [UIColor colorWithWhite:1.0 alpha:0.25]
+        : [UIColor whiteColor]).CGColor;
+    float bandHeight = air.size.height / 6.0f;
+    for (NSUInteger i = 0; i < airBands.count; i++) {
+        UIView *band = airBands[i];
+        band.frame = CGRectMake(0, i * bandHeight, screenWidth, bandHeight);
+    }
+
+    float top = [self sliderBandTop], bottom = [self sliderBandBottom];
+    float panelHeight = bottom - top;
+    self.sliderIOView.frame = CGRectMake(0, top, screenWidth, panelHeight);
+    float columnWidth = screenWidth / 16.0f;
+    for (NSUInteger i = 0; i < sliderColumns.count; i++) {
+        UIView *column = sliderColumns[i];
+        column.frame = CGRectMake(i * columnWidth, 0, columnWidth, panelHeight);
+    }
+    ledBackground.frame = CGRectMake(0, 0, screenWidth, panelHeight);
     [self updateRowDivider];
 }
 
 // The playable band excludes the air strip when air input is enabled.
 -(float)sliderBandTop {
+    if (videoLayout) return [self videoHeight];
     if (!airEnabled) return 0;
     return invertAir ? 0 : screenHeight * 0.4;
 }
 -(float)sliderBandBottom {
+    if (videoLayout) return screenHeight;
     if (!airEnabled) return screenHeight;
     return invertAir ? screenHeight * 0.6 : screenHeight;
 }
@@ -295,11 +367,12 @@
     rowDividerView.hidden = (rowMode == 0);
     rowTopLabel.hidden = (rowMode == 0);
     rowBottomLabel.hidden = (rowMode == 0);
-    float top = [self sliderBandTop], bottom = [self sliderBandBottom];
-    float mid = (top + bottom) / 2;
+    // Row labels live inside the slider view, so measure in its own space.
+    float bandHeight = self.sliderIOView.frame.size.height;
+    float mid = bandHeight / 2;
     rowDividerView.frame = CGRectMake(0, mid - 0.5, screenWidth, 1);
-    rowTopLabel.frame = CGRectMake(screenWidth - 190, (top + mid) / 2 - 10, 180, 20);
-    rowBottomLabel.frame = CGRectMake(screenWidth - 190, (mid + bottom) / 2 - 10, 180, 20);
+    rowTopLabel.frame = CGRectMake(screenWidth - 190, mid / 2 - 10, 180, 20);
+    rowBottomLabel.frame = CGRectMake(screenWidth - 190, mid + mid / 2 - 10, 180, 20);
 }
 
 -(void)openOrCloseFunc {
@@ -360,9 +433,11 @@
         }
         return;
     }
-    float airHeight = screenHeight * 0.4;
-    float airIOHeight = airHeight / 6;
+    CGRect air = [self airRect];
+    float airIOHeight = air.size.height / 6;
     float sliderIOWidth = screenWidth / 16;
+    float panelTop = [self sliderBandTop];
+    float panelBottom = [self sliderBandBottom];
     struct ioBuf buf = {0};
     for (UITouch *touch in event.allTouches) {
         UITouchPhase phase = touch.phase;
@@ -393,20 +468,23 @@
             }
             CGPoint point = [touch locationInView:nil];
             float pointX = screenWidth - point.x, pointY = point.y;
-            BOOL inAirRange = airEnabled && (
-                                             (invertAir && pointY > screenHeight - airHeight) ||
-                                             (!invertAir && pointY < airHeight)
-                                            );
+            BOOL inAirRange = airEnabled && pointY >= air.origin.y
+                              && pointY < CGRectGetMaxY(air);
             if (inAirRange) {
                 int idx;
                 if (invertAir) {
-                    idx = (screenHeight - pointY) / airIOHeight;
+                    idx = (CGRectGetMaxY(air) - pointY) / airIOHeight;
                 } else {
-                    idx = pointY / airIOHeight;
+                    idx = (pointY - air.origin.y) / airIOHeight;
                 }
+                if (idx < 0) idx = 0;
+                if (idx > 5) idx = 5;
                 uint8_t airIdx[] = {4,5,2,3,0,1};
                 buf.air[airIdx[idx]] = 1;
             } else {
+                // In streaming layout the picture above the panel is not a
+                // touch lane; only presses inside the panel band count.
+                if (pointY < panelTop || pointY >= panelBottom) continue;
                 float pointPos = pointX / sliderIOWidth;
                 int idx = (int)pointPos;
                 if (idx < 0) idx = 0;
@@ -417,7 +495,7 @@
                 // hold/tap (2k+1). rowMode 0 keeps the original 16-lane behaviour.
                 BOOL upper = NO;
                 if (rowMode != 0) {
-                    float bandMid = ([self sliderBandTop] + [self sliderBandBottom]) / 2;
+                    float bandMid = (panelTop + panelBottom) / 2;
                     upper = (pointY < bandMid);
                 }
                 int row = upper ? 1 : 0;

@@ -44,8 +44,21 @@
 - (void)socket:(GCDAsyncSocket *)sock didReadData:(NSData *)data withTag:(long)tag {
     switch (tag) {
         case 0: {
-            // length
-            [sock readDataToLength:((uint8_t*)data.bytes)[0] withTimeout:1 tag:1];
+            // One-byte length, except 0xFF which introduces a 4-byte length.
+            // The input bridge keeps using the short form (LED = 99); video
+            // frames need the long form because a JPEG is far above 255 bytes.
+            if (data.length < 1) {
+                [sock disconnect];
+                return;
+            }
+            uint8_t length = ((const uint8_t*)data.bytes)[0];
+            if (length == 0xFF) {
+                [sock readDataToLength:4 withTimeout:5 tag:2];
+            } else if (length == 0) {
+                [sock disconnect];
+            } else {
+                [sock readDataToLength:length withTimeout:1 tag:1];
+            }
             break;
         }
         case 1: {
@@ -62,6 +75,36 @@
             }
             
             [sock readDataToLength:1 withTimeout:5 tag:0];
+            break;
+        }
+        case 2: {
+            // Extended length, big-endian.
+            if (data.length != 4) {
+                [sock disconnect];
+                return;
+            }
+            const uint8_t *bytes = (const uint8_t*)data.bytes;
+            uint32_t length = ((uint32_t)bytes[0] << 24) | ((uint32_t)bytes[1] << 16)
+                            | ((uint32_t)bytes[2] << 8) | (uint32_t)bytes[3];
+            if (length < 3 || length > (4u << 20)) {
+                [sock disconnect];
+                return;
+            }
+            [sock readDataToLength:length withTimeout:5 tag:3];
+            break;
+        }
+        case 3: {
+            // Extended payload: 3-byte type + body.
+            if (data.length >= 3) {
+                NSString *message = [[NSString alloc] initWithData:
+                    [data subdataWithRange:NSMakeRange(0, 3)] encoding:NSASCIIStringEncoding];
+                if ([message isEqualToString:@"VID"]) {
+                    [self.parentVc updateVideo:
+                        [data subdataWithRange:NSMakeRange(3, data.length - 3)]];
+                }
+            }
+            [sock readDataToLength:1 withTimeout:5 tag:0];
+            break;
         }
     }
 }
@@ -89,7 +132,9 @@
     [self.parentVc becomeInactive];
     server.IPv4Enabled = NO;
     server.IPv6Enabled = NO;
-    for (GCDAsyncSocket* sock in connectedSockets) {
+    // Iterate a snapshot: removing while enumerating throws once a streamer
+    // keeps a second socket open.
+    for (GCDAsyncSocket* sock in [connectedSockets copy]) {
         [sock disconnect];
         [connectedSockets removeObject:sock];
     }

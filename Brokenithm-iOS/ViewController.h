@@ -31,8 +31,12 @@
     BOOL airEnabled;
     BOOL autoPopMenu;
     BOOL invertAir;
+    BOOL videoLayout;
     int rowMode;
     BOOL swapRows;
+    UIImageView *videoView;
+    NSMutableArray *airBands;
+    NSMutableArray *sliderColumns;
     UIView *rowDividerView;
     UILabel *rowTopLabel;
     UILabel *rowBottomLabel;
@@ -44,6 +48,7 @@
 @property UIView *sliderIOView;
 
 -(void)updateLed:(NSData*)rgbData;
+-(void)updateVideo:(NSData*)jpegData;
 -(void)updateTouches:(UIEvent *)event;
 -(void)connected;
 -(void)disconnected;

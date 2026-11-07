@@ -23,9 +23,11 @@
 
 | 文件 | 改动 |
 | --- | --- |
-| `Brokenithm-iOS/ViewController.m` | 触摸映射改为上下分排；新增分排线、上/下排提示文字；关闭自动锁屏；状态栏常隐 |
-| `Brokenithm-iOS/ViewController.h` | 新增 `rowMode`、`swapRows` 等状态 |
-| `Brokenithm-iOS/Settings.bundle/Root.plist` | 新增「触摸排布模式」「交换上下传感器」设置项 |
+| `Brokenithm-iOS/ViewController.m` | 触摸映射改为上下分排；新增分排线、上/下排提示文字；关闭自动锁屏；状态栏常隐；新增串流画面（16:9 在上、触摸板紧贴下方、Air 网格叠加在画面上） |
+| `Brokenithm-iOS/ViewController.h` | 新增 `rowMode`、`swapRows`、`videoLayout` 等状态 |
+| `Brokenithm-iOS/SocketDelegate.m` | 接收 `0xFF + 4 字节长度 + VID + JPEG` 的长包；原 1 字节短包（LED）不变 |
+| `Brokenithm-iOS/Settings.bundle/Root.plist` | 新增「触摸排布模式」「交换上下传感器」「串流画面布局」设置项 |
+| `pc/chuni_stream.py` | 电脑端推流：抓 16:9 游戏窗口 → JPEG → USB 转发到 App |
 | `Brokenithm-iOS/Info.plist` | 显示名改为 `Brokenithm-32`；设备能力改 arm64；状态栏隐藏 |
 | `Brokenithm-iOS.xcodeproj` | 移除原作者 Development Team；Bundle ID 改为 `com.chuni32.pad`；部署目标统一为 iOS 13.0；仅 iPad |
 | `Brokenithm-iOS-Release.xcscheme` | 删除指向原作者电脑绝对路径的 Post Action |
@@ -41,6 +43,7 @@
 | 触摸排布模式 = 32区（上排同时带上主通道） | | 上排同时写 `2k+1` 和 `2k`。如果上排的 tap/slide 判定异常，用这个兼容模式 |
 | 交换上下传感器 | 关 | 上下排对应关系反过来，用于确认编号方向 |
 | 启用 Air 输入 | 开 | 顶部（或底部，取决于「Air区域放到下方」）40% 为 Air，其余 60% 才是触摸区 |
+| 串流画面布局 | 开 | 最上方是 16:9 游戏画面，触摸板紧贴画面下方；Air 网格叠加在画面顶部 40%。关掉则恢复纯触摸板布局 |
 
 **PC 端务必保持 `segatools.ini` 里 `[slider] pairMirror=0`。** 如果驱动把成对通道再镜像一次，App 的分排信息会被抹掉，32 区就退化成 16 对。当前 `D:\SEGA\Chunithm\bin\segatools.ini` 已经是 `pairMirror=0`。
 
@@ -135,6 +138,34 @@ iOS App 必须在 macOS 上编译，Windows 上没有合法的 UIKit/iOS SDK 工
 - 状态栏和 Home 指示器会自动隐藏，屏幕不会自动熄灭。
 - 退出 App：从底部上滑两次（因为 App 请求了延后系统手势），或先关闭引导式访问。
 
+### 5.4 串流画面（可选）
+
+App 现在可以直接显示游戏画面：16:9 画面在最上方，触摸板紧贴画面下方，Air 网格叠加在画面上。电脑端用 `pc/chuni_stream.py` 推流，输入桥接端（`Brokenithm-Evolved-iOS`）不用改，它和推流脚本各占一条 TCP 连接。
+
+使用：
+
+1. 电脑先装好 `pymobiledevice3`（MaiPanel 的桥接已经用过它）：`pip install pymobiledevice3`。
+2. iPad 打开 App 并保持前台；电脑双击 `pc\串流.bat`（等价于 `python chuni_stream.py --usb`）。
+3. 它会自动找 `chusanApp.exe` 的窗口；游戏启动后日志出现 `已连接 ... 开始推送画面` 即成功。
+4. App 设置里「串流画面布局」保持打开；关掉就是原来的纯触摸板布局。
+
+可调参数（写在 `pc\串流.bat` 末尾或命令行）：
+
+| 参数 | 默认 | 说明 |
+| --- | --- | --- |
+| `--width` | 1280 | 推流宽度，0 = 游戏窗口原宽 |
+| `--fps` | 30 | 帧率；USB 带宽和电脑 CPU 够可以上 60 |
+| `--quality` | 65 | JPEG 质量 |
+| `--gdi` | | 跳过桌面复制，改用 GDI 抓屏；画面里有黑块时对比用 |
+| `--host <IP>` | | 不走 USB，直连 iPad 的 IP（此时 App 必须在 Wi-Fi 下） |
+| `--exe` | chusanApp.exe | 游戏进程名 |
+
+注意：
+
+- 串流布局下触摸板只剩画面下方的一条（iPad mini 横屏约 107 pt 高，上下两排各约 53 pt）。如果觉得两排太挤，把「触摸排布模式」切回「16区（原始）」，纵向就不再分排。
+- Air 网格默认在画面顶部 40%；打开「Air区域放到下方」会贴到触摸板上方（画面底部），更接近真机抬手的位置。
+- 视频只用于监看，不参与判定；判定仍走原来的触摸包。
+
 ---
 
 ## 六、已知限制
@@ -157,6 +188,8 @@ iOS App 必须在 macOS 上编译，Windows 上没有合法的 UIKit/iOS SDK 工
 | 只有 16 路有反应 | 检查 `segatools.ini` 的 `pairMirror` 是否为 0；检查 App 设置是否被切回 16 区模式 |
 | 32 路有反应但游戏手感不对 | 试试交换上下传感器；再不行用「上排同时带上主通道」模式 |
 | iPad 灯光不显示/闪烁 | 与本 App 无关，按 `rebuilt/README.md` 的 `tools/shm_monitor.py` 判定是游戏输出还是桥接显示端 |
+| 上方一直是黑画面 | 看 `pc\串流.bat` 的日志：等待窗口 → 游戏没启动或 `--exe` 不对；已连接但无帧 → 屏幕没变化或抓屏失败，加 `--gdi` 对比；整块画面全黑但游戏正常 → 桌面复制抓不到视频层，用 `--gdi` |
+| 画面很糊/很卡 | 降低 `--width`、`--fps` 或 `--quality`；USB 带宽不足时先降到 960 宽、24 帧 |
 
 ---
 
