@@ -20,9 +20,18 @@
 - (CGRect)airRect;
 - (void)applyLayout;
 - (void)updateRowDivider;
+- (float)mirrorPanelWidth;
+- (float)mirrorPanelHeight;
 @end
 
 #define FUNCTION_MENU_HEIGHT 420.0f
+
+// The cabinet touch panel is narrower than the game picture. CHUNITHM draws
+// the はい/いいえ bar on the panel itself, so its outer edges give the exact
+// extent: red left edge at 16.6% of the picture width, blue right edge at
+// 83.1% (measured from the live stream), i.e. the panel spans 66.5% of it.
+// The bar is centred on the picture, so the strip is centred too.
+#define MIRROR_PANEL_SPAN 0.665f
 
 @implementation ViewController
 
@@ -354,13 +363,21 @@
     return height < screenHeight ? height : screenHeight;
 }
 
+-(float)mirrorPanelWidth {
+    return screenWidth * MIRROR_PANEL_SPAN;
+}
+
+-(float)mirrorPanelHeight {
+    return [self mirrorPanelWidth] * 9.0f / 21.0f;
+}
+
 -(CGRect)videoRect {
     if (!videoLayout) return CGRectZero;
     float video = [self videoHeight];
     // Portrait stacks a 21:9 panel under the picture; center the pair.
     float panel = 0;
     if (screenHeight > screenWidth) {
-        panel = screenWidth * 9.0f / 21.0f;
+        panel = [self mirrorPanelHeight];
         if (video + panel > screenHeight) panel = screenHeight - video;
     }
     float top = (screenHeight - video - panel) / 2.0f;
@@ -373,11 +390,14 @@
         CGRect video = [self videoRect];
         // Landscape: the panel lies exactly on the 16:9 picture.
         if (screenWidth > screenHeight) return video;
-        float height = screenWidth * 9.0f / 21.0f;
+        // Portrait: a 21:9 strip whose edges line up with the game's touch bar.
+        float width = [self mirrorPanelWidth];
+        float height = [self mirrorPanelHeight];
         float room = screenHeight - CGRectGetMaxY(video);
         if (height > room) height = room;
         if (height < 1) height = 1;
-        return CGRectMake(0, CGRectGetMaxY(video), screenWidth, height);
+        return CGRectMake((screenWidth - width) / 2.0f, CGRectGetMaxY(video),
+                          width, height);
     }
     float top = [self sliderBandTop];
     return CGRectMake(0, top, screenWidth, [self sliderBandBottom] - top);
@@ -416,12 +436,12 @@
 
     CGRect panel = [self panelRect];
     self.sliderIOView.frame = panel;
-    float columnWidth = screenWidth / 16.0f;
+    float columnWidth = panel.size.width / 16.0f;
     for (NSUInteger i = 0; i < sliderColumns.count; i++) {
         UIView *column = sliderColumns[i];
         column.frame = CGRectMake(i * columnWidth, 0, columnWidth, panel.size.height);
     }
-    ledBackground.frame = CGRectMake(0, 0, screenWidth, panel.size.height);
+    ledBackground.frame = CGRectMake(0, 0, panel.size.width, panel.size.height);
     // In landscape the panel lies on the picture, so the LED colours would
     // hide the game; keep them only on the separate portrait panel.
     ledBackground.opacity = (videoLayout && screenWidth > screenHeight) ? 0.0f : 1.0f;
@@ -442,11 +462,12 @@
     rowTopLabel.hidden = (rowMode == 0);
     rowBottomLabel.hidden = (rowMode == 0);
     // Row labels live inside the slider view, so measure in its own space.
+    float bandWidth = self.sliderIOView.frame.size.width;
     float bandHeight = self.sliderIOView.frame.size.height;
     float mid = bandHeight / 2;
-    rowDividerView.frame = CGRectMake(0, mid - 0.5, screenWidth, 1);
-    rowTopLabel.frame = CGRectMake(screenWidth - 190, mid / 2 - 10, 180, 20);
-    rowBottomLabel.frame = CGRectMake(screenWidth - 190, mid + mid / 2 - 10, 180, 20);
+    rowDividerView.frame = CGRectMake(0, mid - 0.5, bandWidth, 1);
+    rowTopLabel.frame = CGRectMake(bandWidth - 190, mid / 2 - 10, 180, 20);
+    rowBottomLabel.frame = CGRectMake(bandWidth - 190, mid + mid / 2 - 10, 180, 20);
 }
 
 -(void)openOrCloseFunc {
@@ -509,8 +530,10 @@
     }
     CGRect air = [self airRect];
     float airIOHeight = air.size.height / 6;
-    float sliderIOWidth = screenWidth / 16;
     CGRect panel = [self panelRect];
+    float sliderIOWidth = panel.size.width / 16;
+    float panelLeft = panel.origin.x;
+    float panelRight = CGRectGetMaxX(panel);
     float panelTop = panel.origin.y;
     float panelBottom = CGRectGetMaxY(panel);
     struct ioBuf buf = {0};
@@ -557,10 +580,11 @@
                 uint8_t airIdx[] = {4,5,2,3,0,1};
                 buf.air[airIdx[idx]] = 1;
             } else {
-                // In streaming layout the picture above the panel is not a
-                // touch lane; only presses inside the panel band count.
+                // Streaming layout: only presses inside the panel band count;
+                // in portrait the strip is inset to the game's touch bar.
+                if (point.x < panelLeft || point.x >= panelRight) continue;
                 if (pointY < panelTop || pointY >= panelBottom) continue;
-                float pointPos = pointX / sliderIOWidth;
+                float pointPos = (pointX - panelLeft) / sliderIOWidth;
                 int idx = (int)pointPos;
                 if (idx < 0) idx = 0;
                 if (idx > 15) idx = 15;
