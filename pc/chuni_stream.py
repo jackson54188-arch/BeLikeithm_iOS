@@ -18,9 +18,12 @@ import asyncio
 import ctypes
 import io
 import logging
+import msvcrt
+import os
 import socket
 import struct
 import sys
+import tempfile
 import threading
 import time
 from ctypes import wintypes
@@ -528,6 +531,19 @@ class Sender:
                 time.sleep(delay)
 
 
+def acquire_single_instance(log):
+    # 第二份会再连一条视频 socket，还会和 USB 转发抢 24865 端口。
+    path = os.path.join(tempfile.gettempdir(), "chuni_stream.lock")
+    handle = open(path, "w")
+    try:
+        msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+    except OSError:
+        handle.close()
+        log("串流已经在运行，本次启动跳过（关掉旧窗口才能重开）")
+        return None
+    return handle
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--exe", default="chusanApp.exe", help="游戏进程名")
@@ -543,6 +559,10 @@ def main():
     args = parser.parse_args()
 
     log = lambda text: print(time.strftime("%H:%M:%S"), text, flush=True)
+
+    lock = acquire_single_instance(log)
+    if lock is None:
+        return 0
 
     if args.host and not args.usb:
         host = args.host

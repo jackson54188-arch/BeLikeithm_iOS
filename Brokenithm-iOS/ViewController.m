@@ -32,6 +32,9 @@
 // 83.1% (measured from the live stream), i.e. the panel spans 66.5% of it.
 // The bar is centred on the picture, so the strip is centred too.
 #define MIRROR_PANEL_SPAN 0.665f
+// Landscape keeps the portrait shape but the whole panel never takes more
+// than 3/5 of the screen height.
+#define MIRROR_PANEL_MAX_HEIGHT 0.6f
 
 @implementation ViewController
 
@@ -368,7 +371,9 @@
 }
 
 -(float)mirrorPanelHeight {
-    return [self mirrorPanelWidth] * 9.0f / 21.0f;
+    float height = [self mirrorPanelWidth] * 9.0f / 21.0f;
+    float limit = screenHeight * MIRROR_PANEL_MAX_HEIGHT;
+    return height < limit ? height : limit;
 }
 
 -(CGRect)videoRect {
@@ -387,12 +392,16 @@
 
 -(CGRect)panelRect {
     if (videoLayout) {
-        CGRect video = [self videoRect];
-        // Landscape: the panel lies exactly on the 16:9 picture.
-        if (screenWidth > screenHeight) return video;
-        // Portrait: a 21:9 strip whose edges line up with the game's touch bar.
         float width = [self mirrorPanelWidth];
         float height = [self mirrorPanelHeight];
+        if (screenWidth > screenHeight) {
+            // Landscape: same shape as portrait, stuck to the bottom edge of
+            // the screen and laid over the lower part of the picture.
+            return CGRectMake((screenWidth - width) / 2.0f, screenHeight - height,
+                              width, height);
+        }
+        // Portrait: a 21:9 strip whose edges line up with the game's touch bar.
+        CGRect video = [self videoRect];
         float room = screenHeight - CGRectGetMaxY(video);
         if (height > room) height = room;
         if (height < 1) height = 1;
@@ -404,6 +413,12 @@
 }
 
 -(CGRect)airRect {
+    if (videoLayout && screenWidth > screenHeight) {
+        // Landscape: the air third is the top part of the bottom touch panel.
+        CGRect panel = [self panelRect];
+        return CGRectMake(panel.origin.x, panel.origin.y,
+                          panel.size.width, panel.size.height / 3.0f);
+    }
     float airHeight = screenHeight * 0.4f;
     if (videoLayout) {
         CGRect video = [self videoRect];
@@ -431,7 +446,7 @@
     float bandHeight = air.size.height / 6.0f;
     for (NSUInteger i = 0; i < airBands.count; i++) {
         UIView *band = airBands[i];
-        band.frame = CGRectMake(0, i * bandHeight, screenWidth, bandHeight);
+        band.frame = CGRectMake(0, i * bandHeight, air.size.width, bandHeight);
     }
 
     CGRect panel = [self panelRect];
@@ -464,10 +479,14 @@
     // Row labels live inside the slider view, so measure in its own space.
     float bandWidth = self.sliderIOView.frame.size.width;
     float bandHeight = self.sliderIOView.frame.size.height;
-    float mid = bandHeight / 2;
-    rowDividerView.frame = CGRectMake(0, mid - 0.5, bandWidth, 1);
-    rowTopLabel.frame = CGRectMake(bandWidth - 190, mid / 2 - 10, 180, 20);
-    rowBottomLabel.frame = CGRectMake(bandWidth - 190, mid + mid / 2 - 10, 180, 20);
+    // Landscape with air splits the panel into three equal sections: lower
+    // row, upper row and air. Without air it falls back to two halves.
+    BOOL triSplit = videoLayout && screenWidth > screenHeight && airEnabled;
+    float top = triSplit ? bandHeight / 3.0f : 0;
+    float split = bandHeight - (bandHeight - top) / 2.0f;
+    rowDividerView.frame = CGRectMake(0, split - 0.5, bandWidth, 1);
+    rowTopLabel.frame = CGRectMake(bandWidth - 190, (top + split) / 2.0f - 10, 180, 20);
+    rowBottomLabel.frame = CGRectMake(bandWidth - 190, (split + bandHeight) / 2.0f - 10, 180, 20);
 }
 
 -(void)openOrCloseFunc {
@@ -568,6 +587,11 @@
             float pointX = screenWidth - point.x, pointY = point.y;
             BOOL inAirRange = airEnabled && pointY >= air.origin.y
                               && pointY < CGRectGetMaxY(air);
+            if (videoLayout && screenWidth > screenHeight) {
+                // The landscape air strip is inset with the panel.
+                inAirRange = inAirRange && point.x >= air.origin.x
+                             && point.x < CGRectGetMaxX(air);
+            }
             if (inAirRange) {
                 int idx;
                 if (invertAir) {
@@ -594,7 +618,13 @@
                 // hold/tap (2k+1). rowMode 0 keeps the original 16-lane behaviour.
                 BOOL upper = NO;
                 if (rowMode != 0) {
-                    float bandMid = (panelTop + panelBottom) / 2;
+                    float bandMid;
+                    if (videoLayout && screenWidth > screenHeight && airEnabled) {
+                        // Landscape: the air third sits above the two touch rows.
+                        bandMid = panelTop + panel.size.height * 2.0f / 3.0f;
+                    } else {
+                        bandMid = (panelTop + panelBottom) / 2;
+                    }
                     upper = (pointY < bandMid);
                 }
                 int row = upper ? 1 : 0;
